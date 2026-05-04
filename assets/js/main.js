@@ -1,1 +1,219 @@
 const Env={isIOS:/iPhone|iPad|iPod/i.test(navigator.userAgent),isAndroid:/Android/i.test(navigator.userAgent),supportsSensors:typeof DeviceOrientationEvent!=='undefined',needsPermission:typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'};const appShell=document.getElementById('appShell');const fixIOSRubber=(el)=>{el.addEventListener('touchstart',()=>{const top=el.scrollTop;const totalScroll=el.scrollHeight;const currentScroll=top+el.offsetHeight;if(top<=0)el.scrollTop=1;else if(currentScroll>=totalScroll)el.scrollTop=top-1;},{passive:true});};if(Env.isIOS)fixIOSRubber(appShell);const observerOptions={root:null,rootMargin:'0px',threshold:0.15};const observer=new IntersectionObserver((entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('active');observer.unobserve(entry.target);}});},{...observerOptions,root:document.getElementById('appShell')});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));setTimeout(()=>{document.querySelectorAll('.reveal:not(.active)').forEach(el=>{el.classList.add('active');});},2000);const nexusHub=document.getElementById('nexusHub');const nexusTrigger=document.getElementById('nexusTrigger');let hubActive=false;nexusTrigger.addEventListener('click',(e)=>{e.stopPropagation();hubActive=!hubActive;if(hubActive){feedback('open');nexusHub.classList.add('active');nexusTrigger.querySelector('svg').innerHTML='<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';}else{feedback('close');nexusHub.classList.remove('active');nexusTrigger.querySelector('svg').innerHTML='<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';}});document.addEventListener('click',(e)=>{if(hubActive&&!nexusHub.contains(e.target)){hubActive=false;nexusHub.classList.remove('active');nexusTrigger.querySelector('svg').innerHTML='<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';feedback('close');}});document.querySelectorAll('.orb-item').forEach(item=>{item.addEventListener('click',function(e){feedback('click');hubActive=false;nexusHub.classList.remove('active');nexusTrigger.querySelector('svg').innerHTML='<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';});});document.querySelector('.podcast-link')?.addEventListener('click',()=>feedback('click'));document.querySelector('.tech-stack-image')?.addEventListener('click',()=>feedback('click'));if(window.matchMedia("(pointer:fine)").matches){const cards=document.querySelectorAll('.glass-card');cards.forEach(card=>{card.addEventListener('mousemove',(e)=>{const rect=card.getBoundingClientRect();const x=e.clientX-rect.left;const y=e.clientY-rect.top;const centerX=rect.width/2;const centerY=rect.height/2;const tiltX=(y-centerY)/20;const tiltY=(centerX-x)/20;card.style.transform=`perspective(1000px)rotateX(${tiltX}deg)rotateY(${tiltY}deg)translateY(-10px)`;});card.addEventListener('mouseleave',()=>{card.style.transform=`perspective(1000px)rotateX(0deg)rotateY(0deg)translateY(0)`;});});}let targetX=0,targetY=0;let currentX=0,currentY=0;let sensorsActive=false;const lerpFactor=0.12;function handleOrientation(e){if(!sensorsActive)sensorsActive=true;const maxTilt=15;const beta=e.beta-45;const gamma=e.gamma;targetX=Math.max(-1,Math.min(1,gamma/maxTilt));targetY=Math.max(-1,Math.min(1,beta/maxTilt));}function updateParallax(){if(sensorsActive){currentX+=(targetX-currentX)*lerpFactor;currentY+=(targetY-currentY)*lerpFactor;if(Math.abs(currentX)>0.01||Math.abs(currentY)>0.01){const tx=currentX*15;const ty=currentY*15;const rx=-currentY*5;const ry=currentX*5;document.querySelectorAll('.glass-card').forEach(card=>{card.style.transform=`perspective(1000px)translate3d(${tx}px,${ty}px,0)rotateX(${rx}deg)rotateY(${ry}deg)`;});}}requestAnimationFrame(updateParallax);}updateParallax();const sensorChip=document.getElementById('sensorChip');async function activateSensors(){if(Env.needsPermission){try{feedback('click');const result=await DeviceOrientationEvent.requestPermission();if(result==='granted'){window.addEventListener('deviceorientation',handleOrientation);sensorChip.classList.remove('visible');feedback('hum');}}catch(e){console.error("Sensor Auth Error:",e);}}else if(Env.supportsSensors){window.addEventListener('deviceorientation',handleOrientation);sensorChip.classList.remove('visible');}}if(Env.needsPermission){sensorChip.classList.add('visible');sensorChip.addEventListener('click',activateSensors);}else if(Env.supportsSensors){appShell.addEventListener('scroll',()=>{window.addEventListener('deviceorientation',handleOrientation);},{once:true});}const canvas=document.getElementById('bg-canvas');const ctx=canvas.getContext('2d',{alpha:false});let width=window.innerWidth,height=window.innerHeight;canvas.width=width;canvas.height=height;const bgCanvas=document.createElement("canvas");const bgCtx=bgCanvas.getContext("2d");function initBg(){bgCanvas.width=width;bgCanvas.height=height;bgCtx.fillStyle='#030305';bgCtx.fillRect(0,0,width,height);const spot=(x,y,r,clr)=>{const g=bgCtx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,clr);g.addColorStop(1,"rgba(3,3,5,0)");bgCtx.fillStyle=g;bgCtx.fillRect(0,0,width,height);};spot(width*0.2,height*0.2,600,"rgba(0,240,255,0.05)");spot(width*0.8,height*0.8,600,"rgba(103,61,230,0.05)");spot(width*0.5,height*0.5,800,"rgba(0,240,255,0.03)");bgCtx.strokeStyle="rgba(255,255,255,0.02)";bgCtx.lineWidth=1;const step=72;for(let x=0;x<width;x+=step){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,height);bgCtx.stroke();}for(let y=0;y<height;y+=step){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(width,y);bgCtx.stroke();}}let mouseX=width/2,mouseY=height/2;class Neuron{constructor(x,y){this.x=x;this.y=y;this.baseR=2.5+Math.random()*3.5;this.r=this.baseR;this.phase=Math.random()*Math.PI*2;this.conns=[];this.pulses=[];this.firing=false;this.fireT=0;this.cooldown=4000+Math.random()*5000;this.dendrites=[];const numD=3+Math.floor(Math.random()*4);for(let i=0;i<numD;i++){const branches=[];if(Math.random()>0.4)branches.push({a:(Math.random()-0.5)*0.8,len:10+Math.random()*15});this.dendrites.push({a:Math.random()*Math.PI*2,len:15+Math.random()*20,branches});}}fire(t){if(t-this.fireT<this.cooldown&&this.fireT!==0)return;this.firing=true;this.fireT=t;this.conns.forEach(targetIdx=>{this.pulses.push({targetIdx,startTime:t,duration:2000+Math.random()*1000});});}update(t,neurons){if(Math.random()<0.0008)this.fire(t);this.r=this.baseR+Math.sin(t*0.0015+this.phase)*0.6;const dx=mouseX-this.x,dy=mouseY-this.y;const dist=Math.sqrt(dx*dx+dy*dy);this.mouseDist=dist;if(dist<180){this.x+=dx*0.0002;this.y+=dy*0.0002;}for(let i=this.pulses.length-1;i>=0;i--){const p=this.pulses[i];if((t-p.startTime)/p.duration>=1){neurons[p.targetIdx].fire(t);this.pulses.splice(i,1);}}if(t-this.fireT>250)this.firing=false;}draw(c,neurons,t){c.lineWidth=1;this.conns.forEach(targetIdx=>{const target=neurons[targetIdx];c.beginPath();c.moveTo(this.x,this.y);c.lineTo(target.x,target.y);c.strokeStyle="rgba(0,240,255,0.08)";c.stroke();});this.pulses.forEach(p=>{const target=neurons[p.targetIdx];const progress=(t-p.startTime)/p.duration;c.beginPath();c.arc(this.x+(target.x-this.x)*progress,this.y+(target.y-this.y)*progress,2,0,Math.PI*2);c.fillStyle="rgba(103,61,230,0.6)";c.fill();});c.strokeStyle="rgba(0,240,255,0.15)";c.lineWidth=0.8;this.dendrites.forEach(d=>{const ex=this.x+Math.cos(d.a)*d.len,ey=this.y+Math.sin(d.a)*d.len;c.beginPath();c.moveTo(this.x,this.y);c.lineTo(ex,ey);c.stroke();});let glowRadius=this.r*3.5;let glowColor=this.firing ? "rgba(103,61,230,0.3)":(this.mouseDist&&this.mouseDist<150 ? `rgba(0,240,255,${0.1+(1-this.mouseDist/150)*0.2})`:null);if(glowColor){c.beginPath();c.arc(this.x,this.y,this.mouseDist&&this.mouseDist<150 ? this.r*(3.5+(1-this.mouseDist/150)*2):glowRadius,0,Math.PI*2);c.fillStyle=glowColor;c.fill();}c.beginPath();c.arc(this.x,this.y,this.r+(this.mouseDist&&this.mouseDist<150 ?(1-this.mouseDist/150)*1.2:0),0,Math.PI*2);c.fillStyle=this.firing ? "rgba(255,255,255,0.9)":"rgba(0,240,255,0.3)";c.fill();}}let neurons=[];const initNeurons=()=>{neurons=[];const numNeurons=Math.floor((width*height)/18000);for(let i=0;i<numNeurons;i++)neurons.push(new Neuron(Math.random()*width,Math.random()*height));neurons.forEach((a,i)=>{const sorted=[...neurons.entries()].filter(([j])=>j!==i).sort(([,b],[,c])=>Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(a.x-c.x,a.y-c.y)).slice(0,2+Math.floor(Math.random()*3));sorted.forEach(([j])=>{if(!a.conns.includes(j))a.conns.push(j);});});setTimeout(()=>{const now=performance.now();neurons.forEach(n=>{if(Math.random()<0.15)n.fire(now);});},200);};const onResize=()=>{width=window.innerWidth;height=window.innerHeight;canvas.width=width;canvas.height=height;initBg();initNeurons();};const onMouseMove=(e)=>{mouseX=e.clientX;mouseY=e.clientY;};window.addEventListener("resize",onResize,{passive:true});window.addEventListener("mousemove",onMouseMove,{passive:true});initBg();initNeurons();let rafId;const animate=(t)=>{ctx.drawImage(bgCanvas,0,0);neurons.forEach(n=>{n.update(t,neurons);n.draw(ctx,neurons,t);});rafId=requestAnimationFrame(animate);};rafId=requestAnimationFrame(animate);document.getElementById('btn-vcard').addEventListener('click',function(e){e.preventDefault();hubActive=false;nexusHub.classList.remove('active');nexusTrigger.querySelector('svg').innerHTML='<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';const vCardData=`BEGIN:VCARD VERSION:3.0 N:Izquierdo G.;Juan Carlos;;;FN:Juan Carlos Izquierdo G. ORG:Nexus 360 iA TITLE:Co-Founder|Arquitecto de Sistemas de Negocio TEL;TYPE=WORK,VOICE:+527291556630 EMAIL;TYPE=WORK:jc@nexus360.company URL:https:END:VCARD`;const dataUri='data:text/vcard;charset=utf-8,'+encodeURIComponent(vCardData);const link=document.createElement('a');link.href=dataUri;link.download=`Juan_Carlos_Izquierdo.vcf`;document.body.appendChild(link);link.click();document.body.removeChild(link);});const modalContainer=document.getElementById('global-modal');const modalVideo=document.getElementById('modal-video');const modalTitle=document.getElementById('modal-title');const modalBody=document.getElementById('modal-body');const modalContentMap={'modal-auditoria':{title:'Auditoría Cognitiva',body:'<p style="color:var(--text-secondary);line-height:1.8;margin-bottom:20px;">Analizamos la arquitectura de tu información empresarial. Mediante la extracción de datos dispersos,identificamos los nodos críticos donde la fricción reduce el rendimiento. Entregamos un plano táctico para la implementación de modelos de lenguaje(LLMs).</p><ul style="color:var(--accent-cyan);line-height:1.8;margin-left:20px;"><li>Mapeo de Flujos de Valor</li><li>Evaluación de Madurez de Datos</li><li>Diseño de Casos de Uso ROI Positivo</li></ul>'},'modal-arquitectura':{title:'Arquitectura y Núcleos IA',body:'<p style="color:var(--text-secondary);line-height:1.8;margin-bottom:20px;">Ingeniería de software a la medida. Desarrollamos micro-ecosistemas y plataformas SaaS escalables con Inteligencia Artificial incrustada. Dominamos el stack moderno:Next.js,Supabase,PostgreSQL y modelos de OpenAI. Tu sistema no será una interfaz más,será una ventaja matemática.</p><ul style="color:var(--accent-cyan);line-height:1.8;margin-left:20px;"><li>Sistemas Deterministas con Node&Python</li><li>Agentes Autónomos&RAG</li><li>Interfaces Liquid Glass&Zero-Server</li></ul>'},'modal-adquisicion':{title:'Adquisición Paramétrica',body:'<p style="color:var(--text-secondary);line-height:1.8;margin-bottom:20px;">Sistemas algorítmicos para la evaluación de talento. Eliminamos los sesgos en la contratación aplicando análisis predictivo sobre las habilidades cognitivas y técnicas de los candidatos,aislando a los mejores ejecutivos en tiempo récord.</p><ul style="color:var(--accent-cyan);line-height:1.8;margin-left:20px;"><li>Filtrado Cognitivo Automatizado</li><li>Sistemas Anti-Sesgo y Cumplimiento</li><li>Integración en Flujos de RRHH</li></ul>'}};const SoundManager={ctx:null,init(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;this.ctx=new AC();return this.ctx;},getContext(){if(!this.ctx)this.init();return this.ctx;},click(){try{const ctx=this.getContext();if(!ctx)return;const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(528,ctx.currentTime+0.08);gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.04,ctx.currentTime+0.01);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.08);}catch(e){}},open(){try{const ctx=this.getContext();if(!ctx)return;const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(528,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(1056,ctx.currentTime+0.4);gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.06,ctx.currentTime+0.05);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.4);}catch(e){}},close(){try{const ctx=this.getContext();if(!ctx)return;const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(528,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(220,ctx.currentTime+0.3);gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.05,ctx.currentTime+0.03);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.3);}catch(e){}},hum(freq=528){try{const ctx=this.getContext();if(!ctx)return;const osc=ctx.createOscillator();const gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(freq/2,ctx.currentTime+1.2);gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.08,ctx.currentTime+0.1);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.2);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+1.2);}catch(e){}}};const Haptic={tap(){if(navigator.vibrate)navigator.vibrate(15);},medium(){if(navigator.vibrate)navigator.vibrate(40);},success(){if(navigator.vibrate)navigator.vibrate([30,50,30]);}};function feedback(type='click'){Haptic.tap();switch(type){case 'click':SoundManager.click();break;case 'open':SoundManager.open();Haptic.medium();break;case 'close':SoundManager.close();break;case 'hum':SoundManager.hum(528);Haptic.medium();break;default:SoundManager.click();}}document.querySelectorAll('[data-modal]').forEach(card=>{card.addEventListener('click',()=>{feedback('open');const modalId=card.getAttribute('data-modal');const content=modalContentMap[modalId];if(content){modalTitle.innerHTML=content.title;modalBody.innerHTML=content.body;if(modalVideo.paused){modalVideo.play().catch(()=>{});}modalContainer.classList.add('show');document.body.style.overflow='hidden';}});});document.getElementById('close-modal').addEventListener('click',()=>{feedback('close');modalContainer.classList.remove('show');document.body.style.overflow='';setTimeout(()=>{modalVideo.pause();},400);});document.querySelector('.liquid-modal-bg').addEventListener('click',()=>{feedback('close');modalContainer.classList.remove('show');document.body.style.overflow='';setTimeout(()=>{modalVideo.pause();},400);});
+
+// ================================================
+// FRENTE 2 — CURSOR MAGNÉTICO (Solo desktop)
+// ================================================
+(function initMagneticCursor() {
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  document.body.classList.add('custom-cursor-active');
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  if (!dot || !ring) return;
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    dot.style.left = mouseX + 'px'; dot.style.top = mouseY + 'px';
+    dot.style.opacity = '1'; ring.style.opacity = '1';
+  });
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity = '0'; ring.style.opacity = '0';
+  });
+  (function loop() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '48px'; ring.style.height = '48px';
+      ring.style.borderColor = 'rgba(0,240,255,0.8)';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '32px'; ring.style.height = '32px';
+      ring.style.borderColor = 'var(--accent-cyan)';
+    });
+  });
+})();
+
+// ================================================
+// FRENTE 2 — SPOTLIGHT EN CARDS
+// ================================================
+(function initSpotlight() {
+  document.querySelectorAll('.glass-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mouse-x', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--mouse-y', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+  });
+})();
+
+// ================================================
+// FRENTE 2 — CONTACT DATA & VCARD MEJORADA
+// ================================================
+const CONTACT_DATA = {
+  name: 'Juan Carlos Izquierdo González',
+  org: 'Themis by Nexus',
+  title: 'Arquitecto de Sistemas & IA',
+  email: 'jc@themisbynexus.com',
+  url: 'https://themisbynexus.com',
+  phone: '+527291556630',
+  whatsapp: '+527291556630'
+};
+
+function buildVCard(d) {
+  return 'BEGIN:VCARD\nVERSION:3.0\nFN:' + d.name +
+    '\nN:Izquierdo González;Juan Carlos;;;\nORG:' + d.org +
+    '\nTITLE:' + d.title + '\nTEL;TYPE=CELL:' + d.phone +
+    '\nEMAIL;TYPE=INTERNET:' + d.email + '\nURL:' + d.url +
+    '\nNOTE:Arquitecto de IA · Co-Founder Themis by Nexus\nEND:VCARD';
+}
+
+async function saveContact() {
+  feedback('click');
+  var blob = new Blob([buildVCard(CONTACT_DATA)], { type: 'text/vcard;charset=utf-8' });
+  var file = new File([blob], 'juan-carlos-themis-nexus.vcf', { type: 'text/vcard' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ title: 'Juan Carlos Izquierdo — Themis by Nexus', text: '¡Guarda mi contacto!', files: [file] });
+      contactSavedSuccess(); return;
+    } catch(err) { if (err.name === 'AbortError') return; }
+  }
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Juan Carlos Izquierdo', url: CONTACT_DATA.url }); return; }
+    catch(err) { if (err.name === 'AbortError') return; }
+  }
+  var url = URL.createObjectURL(blob);
+  var a = Object.assign(document.createElement('a'), { href: url, download: 'juan-carlos-themis-nexus.vcf' });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  contactSavedSuccess();
+}
+
+function contactSavedSuccess() {
+  feedback('hum'); Haptic.success();
+  var btn = document.querySelector('#save-contact-btn');
+  if (!btn) return;
+  var orig = btn.innerHTML;
+  btn.innerHTML = '✓ Contacto guardado';
+  btn.style.cssText += 'background:rgba(103,212,114,0.3);border-color:rgba(103,212,114,0.5);';
+  setTimeout(function() { btn.innerHTML = orig; btn.style.background = ''; btn.style.borderColor = ''; }, 2800);
+}
+
+// ================================================
+// FRENTE 2 — WALLET (Apple / Google)
+// ================================================
+function renderWalletButtons() {
+  var c = document.querySelector('#wallet-buttons');
+  if (!c) return;
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isAndroid = /Android/i.test(navigator.userAgent);
+  if (isIOS) {
+    c.innerHTML = '<p class="wallet-desktop-hint" style="color:var(--accent-cyan);">Apple Wallet disponible próximamente</p>';
+  } else if (isAndroid) {
+    c.innerHTML = '<p class="wallet-desktop-hint" style="color:var(--accent-cyan);">Google Wallet disponible próximamente</p>';
+  } else {
+    c.innerHTML = '<p class="wallet-desktop-hint">Abre desde tu teléfono para agregar al Wallet</p>';
+  }
+}
+
+function openCalendly() {
+  feedback('click');
+  var URL_CALENDLY = 'https://calendly.com/jc-themisbynexus/30min';
+  if (window.Calendly) { Calendly.initPopupWidget({ url: URL_CALENDLY }); }
+  else { window.open(URL_CALENDLY, '_blank'); }
+}
+
+// ================================================
+// FRENTE 2 — NFC (Chrome Android only)
+// ================================================
+var NFCModule = {
+  supported: 'NDEFReader' in window,
+  status: function(msg, type) {
+    var el = document.querySelector('#nfc-status');
+    if (el) { el.textContent = msg; el.className = 'nfc-status nfc-status--' + (type || 'info'); }
+  },
+  writeTag: async function() {
+    if (!this.supported) { this.status('Tu navegador no soporta NFC.', 'error'); return; }
+    feedback('click');
+    this.status('Acerca tu teléfono a un tag NFC...', 'scanning');
+    try {
+      await new NDEFReader().write({
+        records: [
+          { recordType: 'url', data: 'https://themisbynexus.com' },
+          { recordType: 'text', data: 'Juan Carlos Izquierdo — Themis by Nexus' }
+        ]
+      });
+      this.status('¡Tag NFC programado!', 'success'); feedback('hum');
+    } catch(err) {
+      this.status(err.name === 'NotAllowedError' ? 'Permiso NFC denegado.' : 'Error. Intenta de nuevo.', 'error');
+    }
+  },
+  renderButton: function() {
+    var c = document.querySelector('#nfc-section');
+    if (!c) return;
+    if (this.supported) {
+      c.innerHTML = '<button class="nfc-write-btn" id="nfc-write-trigger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg> Programar Tag NFC</button><p id="nfc-status" class="nfc-status"></p><p class="nfc-hint">Acerca un tag NFC en blanco para programarlo</p>';
+      document.getElementById('nfc-write-trigger').addEventListener('click', function() { NFCModule.writeTag(); });
+    } else { c.style.display = 'none'; }
+  }
+};
+
+// ================================================
+// FRENTE 2 — QR DINÁMICO
+// ================================================
+function generateModalQR() {
+  var canvas = document.getElementById('qr-canvas');
+  if (!canvas || typeof QRCode === 'undefined') return;
+  QRCode.toCanvas(canvas, 'https://themisbynexus.com', {
+    width: 160, margin: 2, color: { dark: '#ffffff', light: '#00000000' }
+  });
+}
+
+// ================================================
+// FRENTE 2 — MODAL DE CONTACTO (init + open/close)
+// ================================================
+function initContactModal() {
+  renderWalletButtons();
+  NFCModule.renderButton();
+  generateModalQR();
+}
+
+var contactModal = document.getElementById('contact-modal');
+var contactVideo = document.getElementById('contact-modal-video');
+
+function openContactModal() {
+  feedback('open');
+  initContactModal();
+  if (contactVideo && contactVideo.paused) contactVideo.play().catch(function(){});
+  contactModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeContactModal() {
+  feedback('close');
+  contactModal.classList.remove('show');
+  document.body.style.overflow = '';
+  setTimeout(function() { if (contactVideo) contactVideo.pause(); }, 400);
+}
+
+document.getElementById('close-contact-modal').addEventListener('click', closeContactModal);
+document.getElementById('contact-modal-bg').addEventListener('click', closeContactModal);
+document.getElementById('save-contact-btn').addEventListener('click', function() { saveContact(); });
+document.getElementById('btn-calendly').addEventListener('click', function() { openCalendly(); });
+
+// Override btn-vcard: ahora abre el modal de contacto en vez de descargar directo
+(function() {
+  var oldBtn = document.getElementById('btn-vcard');
+  if (!oldBtn) return;
+  var newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  newBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    hubActive = false;
+    nexusHub.classList.remove('active');
+    nexusTrigger.querySelector('svg').innerHTML = '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
+    openContactModal();
+  });
+})();

@@ -16,16 +16,27 @@
     <meta name="twitter:title" content="Juan Carlos Izquierdo | Arquitecto de Sistemas & IA">
     <meta name="twitter:description" content="Co-Founder Nexus 360 iA. Construimos software de grado corporativo e infraestructura cognitiva para Directorios y CEOs.">
     <meta name="twitter:image" content="https://jc.themisbynexus.com/assets/img/4.jpeg">
-    <!-- CSP Estricto: Seguridad 360 -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://assets.zyrosite.com; media-src 'self' https://videos.pexels.com; script-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com;">
+    <!-- CSP Estricto: Seguridad 360 (actualizado Frente 2) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://assets.zyrosite.com; media-src 'self' https://videos.pexels.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://assets.calendly.com; connect-src 'self' https://api.themisbynexus.com https://calendly.com; frame-src https://www.youtube.com https://calendly.com;">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Krona+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Krona+One&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- QR Code Generator (Frente 2) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" defer></script>
+
+    <!-- Calendly Widget (Frente 2) -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
     
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
+
+    <!-- CURSOR MAGNÉTICO — Solo desktop con mouse real (Frente 2) -->
+    <div id="cursor-dot" aria-hidden="true"></div>
+    <div id="cursor-ring" aria-hidden="true"></div>
 
     <!-- MOTOR 3D BACKGROUND (ZERO-SERVER) -->
     <canvas id="bg-canvas"></canvas>
@@ -201,6 +212,86 @@
             </button>
             <h3 id="modal-title" style="font-family: var(--font-display); font-size: 24px; margin-bottom: 24px;"></h3>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DE CONTACTO (Frente 2) ===== -->
+    <div class="liquid-modal" id="contact-modal">
+        <div class="liquid-modal-bg" id="contact-modal-bg"></div>
+        <video class="liquid-modal-video" src="media/3.mp4" loop muted playsinline preload="none" id="contact-modal-video"></video>
+        <div class="liquid-modal-content contact-modal-inner">
+            <button class="liquid-modal-close" id="close-contact-modal">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- HEADER DEL MODAL -->
+            <div class="modal-header">
+                <div class="modal-avatar-placeholder">
+                    <div class="avatar-skeleton"></div>
+                </div>
+                <div class="modal-identity">
+                    <h2 class="modal-name">Juan Carlos Izquierdo González</h2>
+                    <p class="modal-title">Arquitecto de Sistemas & IA</p>
+                    <p class="modal-company mono">Themis by Nexus</p>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 1: Guardar Contacto (vCard) -->
+            <section class="modal-section" id="section-contact">
+                <div class="contact-tooltip">
+                    <span class="tooltip-pulse"></span>
+                    Toca para agregar directamente a tu agenda
+                </div>
+                <button id="save-contact-btn" class="btn-primary"
+                        aria-label="Guardar contacto de Juan Carlos Izquierdo en tu agenda">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Guardar Contacto
+                </button>
+            </section>
+
+            <!-- SECCIÓN 2: Wallet -->
+            <section class="modal-section" id="section-wallet">
+                <div id="wallet-buttons"></div>
+            </section>
+
+            <!-- SECCIÓN 3: NFC (solo Chrome Android) -->
+            <section class="modal-section" id="nfc-section"></section>
+
+            <!-- SECCIÓN 4: QR Dinámico -->
+            <section class="modal-section" id="section-qr">
+                <p class="section-label mono">Comparte esta firma</p>
+                <canvas id="qr-canvas" aria-label="QR code de themisbynexus.com"></canvas>
+            </section>
+
+            <!-- SECCIÓN 5: CTA de Ventas -->
+            <section class="modal-section modal-cta" id="section-cta">
+                <div class="nexus-cta-divider">
+                    <span>¿Quieres una experiencia como esta?</span>
+                </div>
+                <p class="nexus-cta-desc">
+                    Arquitectamos firmas digitales, sistemas de IA y experiencias
+                    premium para empresas que quieren impactar.
+                </p>
+                <div class="nexus-cta-buttons">
+                    <button class="cta-btn cta-btn--primary" id="btn-calendly">
+                        Agendar una llamada
+                    </button>
+                    <a class="cta-btn cta-btn--whatsapp"
+                       href="https://wa.me/5217291556630?text=Hola%20Juan%20Carlos%2C%20vi%20tu%20firma%20digital%20y%20me%20gustar%C3%ADa%20platicar%20sobre%20una%20experiencia%20similar."
+                       target="_blank" rel="noopener noreferrer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a7.04 7.04 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/>
+                        </svg>
+                        WhatsApp directo
+                    </a>
+                </div>
+            </section>
         </div>
     </div>
 
