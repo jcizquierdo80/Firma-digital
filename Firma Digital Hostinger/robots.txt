@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /assets/js/
+Disallow: /assets/css/
+Disallow: /media/
+
+Sitemap: https://jc.themisbynexus.com/sitemap.xml

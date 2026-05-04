@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+._*
+
+# Editores
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+
+# Temporal
+*.tmp
+*.log
+
+# ZIP de deploy (pesado)
+*.zip
+
+# Proyecto Sentinel (separado)
+/Web/
+
+# Videos y medios pesados (se manejan aparte)
+# Descomenta estas líneas si el repo se vuelve muy grande:
+# /ok/
+# /media/
+# /Firma Digital Hostinger/media/
