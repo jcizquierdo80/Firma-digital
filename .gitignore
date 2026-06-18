@@ -1,27 +1,81 @@
-# macOS
-.DS_Store
-._*
+```
+# Build artifacts
+dist/
+build/
+*.js.map
 
-# Editores
-*.swp
-*.swo
-*~
-
-# Node
+# Dependencies
 node_modules/
 
-# Temporal
-*.tmp
+# Logs and temp files
 *.log
+*.tmp
 
-# ZIP de deploy (pesado)
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Java specific
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+build/
+
+# C/C++ specific
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.out
+
+# Compression files
 *.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
 
-# Proyecto Sentinel (separado)
-/Web/
-
-# Videos y medios pesados (se manejan aparte)
-# Descomenta estas líneas si el repo se vuelve muy grande:
-# /ok/
-# /media/
-# /Firma Digital Hostinger/media/
+# MyPy cache
+.mypy_cache/
+.pytest_cache/
+```
