@@ -1,3 +1,22 @@
+/**
+ * Firma Digital v4.2 - Main Entry Point
+ * Módulo principal que integra todos los sistemas
+ */
+
+// Importar módulos ES6
+import { state } from './state.js';
+import { capabilities, initCapabilities } from './capabilities.js';
+import { shareContact, downloadVCard } from './share-manager.js';
+
+// Exportar para acceso global si es necesario
+window.shareContact = shareContact;
+window.downloadVCard = downloadVCard;
+
+// Inicializar capacidades al cargar
+initCapabilities().then(() => {
+    console.log('✅ Capabilities initialized');
+});
+
 // 🏁 Motor F1: Carga en memoria para AudioBuffer (zero latency)
 let F1_SAMPLE_BUFFER = null;
 
@@ -437,10 +456,11 @@ const Env = {
     needsPermission: typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'
 };
 const appShell = document.getElementById('appShell');
-window._modalOpen = false;
+
+// Usar state module en lugar de variable global directa
 const fixIOSRubber = (el) => {
     el.addEventListener('touchstart', () => {
-        if (window._modalOpen) return;
+        if (state.isModalOpen) return;
         const top = el.scrollTop;
         const totalScroll = el.scrollHeight;
         const currentScroll = top + el.offsetHeight;
@@ -1068,7 +1088,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
                 modalVideo.play().catch(() => {});
             }
             modalContainer.classList.add('show');
-            window._modalOpen = true;
+            state.setModalOpen(true);
             appShell.classList.add('modal-open');
         }
     });
@@ -1076,7 +1096,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
 function closeGlobalModal() {
     feedback('close');
     modalContainer.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(() => {
         if (modalVideo) modalVideo.pause();
@@ -1097,7 +1117,7 @@ allModals.forEach(modal => {
             const cleanup = () => {
                 if (cleaned) return;
                 cleaned = true;
-                window._modalOpen = false;
+                state.setModalOpen(false);
                 appShell.classList.remove('modal-open');
             };
             modal.addEventListener('transitionend', cleanup, { once: true });
@@ -1373,14 +1393,14 @@ function openContactModal() {
     initContactModal();
     if (contactVideo && contactVideo.paused) contactVideo.play().catch(function() {});
     contactModal.classList.add('show');
-    window._modalOpen = true;
+    state.setModalOpen(true);
     appShell.classList.add('modal-open');
 }
 
 function closeContactModal() {
     feedback('close');
     contactModal.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(function() {
         if (contactVideo) contactVideo.pause();
