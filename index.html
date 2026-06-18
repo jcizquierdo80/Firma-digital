@@ -76,6 +76,10 @@
     <link rel="preconnect" href="https://assets.calendly.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Krona+One&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
+    <!-- Preload crítico para CSS y fuentes -->
+    <link rel="preload" href="assets/css/main.css?v=4009" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Krona+One&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" as="style">
+
     <!-- QR Code Generator (Frente 2) -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" defer></script>
 
@@ -83,7 +87,9 @@
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
-    <link rel="stylesheet" href="assets/css/main.css?v=4009">
+    <!-- CSS principal diferido para mejorar carga inicial -->
+    <link rel="preload" href="assets/css/main.css?v=4009" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="assets/css/main.css?v=4009"></noscript>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Ir al contenido principal</a>
@@ -114,7 +120,7 @@
     <div id="cursor-ring" aria-hidden="true"></div>
 
     <!-- F1 CINEMATIC BACKGROUND -->
-    <video id="bg-video" autoplay loop muted playsinline poster="media/f1-poster.jpg" preload="metadata" aria-hidden="true">
+    <video id="bg-video" autoplay loop muted playsinline poster="media/f1-poster.jpg" preload="none" aria-hidden="true">
         <source src="media/f1-bg.webm" type="video/webm;codecs=vp9">
         <source src="media/f1-bg.mp4" type="video/mp4;codecs=hvc1">
     </video>
@@ -160,7 +166,7 @@
         </section>
 
         <!-- MODO F1 — Activa sensores + motor + experiencia completa -->
-        <div id="sensorChip" class="sensor-chip">
+        <div id="sensorChip" class="sensor-chip" role="button" tabindex="0" aria-pressed="false" aria-label="Activar Modo F1">
             <div class="dot"></div>
             <span>Activar Modo F1</span>
         </div>
@@ -178,7 +184,7 @@
         <section class="reveal" id="servicios">
             <div class="bento-grid">
                 <!-- Tarjeta 1 (Auditoría - Wide) -->
-                <div class="glass-card bento-card bento-card--wide" id="card-1" data-modal="modal-auditoria">
+                <div class="glass-card bento-card bento-card--wide" id="card-1" data-modal="modal-auditoria" role="button" tabindex="0" aria-label="Auditoría Cognitiva: Mapeamos el ADN de tus flujos de valor">
                     <span class="f1-status-dot" aria-hidden="true"></span>
                     <div class="card-sector-label">S1 · AUDITORÍA</div>
                     <div class="icon-wrapper">
@@ -192,7 +198,7 @@
                 </div>
 
                 <!-- Tarjeta 2 (Arquitectura - Narrow) -->
-                <div class="glass-card bento-card bento-card--narrow" id="card-2" data-modal="modal-arquitectura">
+                <div class="glass-card bento-card bento-card--narrow" id="card-2" data-modal="modal-arquitectura" role="button" tabindex="0" aria-label="Arquitectura y Núcleos IA: Transformamos la entropía en sistemas deterministas">
                     <span class="f1-status-dot" aria-hidden="true"></span>
                     <div class="card-sector-label">S2 · ARQUITECTURA</div>
                     <div class="icon-wrapper">
@@ -206,7 +212,7 @@
                 </div>
 
                 <!-- Tarjeta 3 (Adquisición - Half) -->
-                <div class="glass-card bento-card bento-card--half" id="card-3" data-modal="modal-adquisicion">
+                <div class="glass-card bento-card bento-card--half" id="card-3" data-modal="modal-adquisicion" role="button" tabindex="0" aria-label="Adquisición Paramétrica: Eliminamos el sesgo humano del talento corporativo">
                     <span class="f1-status-dot" aria-hidden="true"></span>
                     <div class="card-sector-label">S3 · TALENTO</div>
                     <div class="icon-wrapper">
@@ -222,7 +228,7 @@
                 </div>
 
                 <!-- Podcast (Half) -->
-                <div class="glass-card bento-card bento-card--half" id="podcast" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0; overflow: hidden; border-color: rgba(103, 61, 230, 0.3);">
+                <div class="glass-card bento-card bento-card--half" id="podcast" role="button" tabindex="0" aria-label="Podcast Código Nexus: Conversaciones sin filtro sobre Inteligencia Artificial y desarrollo corporativo" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0; overflow: hidden; border-color: rgba(103, 61, 230, 0.3);">
                     <img src="assets/img/4.webp" alt="Podcast Código Nexus" loading="lazy" width="400" height="160" style="width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.05); pointer-events: none;">
                     <div style="padding: 30px;">
                         <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 12px;">Podcast <span class="text-gradient">"Código Nexus"</span></h3>
@@ -253,9 +259,9 @@
 
     <!-- NEXUS ORB HUB (Menú Flotante) -->
     <nav class="nexus-orb-hub" id="nexusHub" aria-label="Navegación principal">
-        <div class="orb-menu">
+        <div class="orb-menu" role="menu">
             <!-- Descargar Contacto (vCard Zero-Server) -->
-            <a href="#" id="btn-vcard" class="orb-item">
+            <a href="#" id="btn-vcard" class="orb-item" role="menuitem" aria-label="Guardar Contacto">
                 <span class="orb-label">Guardar Contacto</span>
                 <div class="orb-icon">
                     <svg viewBox="0 0 24 24"><path d="M17,3H5C3.89,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V7L17,3M19,19H5V5H16.17L19,7.83V19M12,12C10.34,12 9,13.34 9,15S10.34,18 12,18 15,16.66 15,15 13.66,12 12,12M6,6H15V10H6V6Z"></path></svg>
@@ -263,7 +269,7 @@
             </a>
             
             <!-- LinkedIn -->
-            <a href="https://www.linkedin.com/in/juan-carlos-izquierdo-gonzalez/" target="_blank" rel="noopener noreferrer" class="orb-item">
+            <a href="https://www.linkedin.com/in/juan-carlos-izquierdo-gonzalez/" target="_blank" rel="noopener noreferrer" class="orb-item" role="menuitem" aria-label="LinkedIn Profesional">
                 <span class="orb-label">LinkedIn Profesional</span>
                 <div class="orb-icon">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.16-3.66 2.65 2.65 0 0 0-2.34 1.3v-1.11h-2.76v8.77h2.76v-4.38a1.38 1.38 0 0 1 1.25-1.52 1.34 1.34 0 0 1 1.49 1.5v4.4h2.76M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.77H5.5v8.77h2.77z"></path></svg>
@@ -271,7 +277,7 @@
             </a>
 
             <!-- WhatsApp -->
-            <a href="https://wa.me/5217291556630" target="_blank" rel="noopener noreferrer" class="orb-item">
+            <a href="https://wa.me/5217291556630" target="_blank" rel="noopener noreferrer" class="orb-item" role="menuitem" aria-label="Solicitar Información">
                 <span class="orb-label">Solicitar Información</span>
                 <div class="orb-icon">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 21.83L7.19 20.47C8.63 21.29 10.28 21.75 12.04 21.75C17.5 21.75 21.95 17.3 21.95 11.84C21.95 6.38 17.5 2 12.04 2M16.71 14.5C16.54 15.14 15.46 15.74 15.17 15.78C14.88 15.82 14.88 16.34 12.63 15.44C10.38 14.54 8.92 12.28 8.78 12.11C8.64 11.94 7.82 10.84 7.82 9.71C7.82 8.58 8.45 7.95 8.61 7.61C8.78 7.27 8.96 7.23 9.17 7.23H9.43C9.5 8.12 9.56 8.29 9.46 8.5C9.36 8.71 9.33 8.81 9.2 8.97C9.07 9.13 8.93 9.32 8.81 9.45C8.68 9.58 8.54 9.72 8.68 10C8.82 10.28 9.42 11.1 10.5 12C11.58 12.9 12.47 13.21 12.72 13.34C12.97 13.47 13.1 13.44 13.24 13.28C13.38 13.12 13.92 12.56 14.08 12.25C14.25 11.94 14.42 11.98 14.65 12.08C14.88 12.18 16.08 12.78 16.32 12.92C16.57 13.06 16.74 13.12 16.81 13.23C16.88 13.34 16.88 13.86 16.71 14.5Z"></path></svg>
@@ -279,7 +285,7 @@
             </a>
         </div>
         
-        <div class="orb-trigger" id="nexusTrigger">
+        <div class="orb-trigger" id="nexusTrigger" role="button" tabindex="0" aria-label="Abrir menú de navegación" aria-expanded="false">
             <svg viewBox="0 0 64 64" class="f1-wheel">
                 <circle cx="32" cy="32" r="18" fill="none" stroke="currentColor" stroke-width="2"/>
                 <rect x="16" y="18" width="32" height="6" rx="3" fill="currentColor" />
@@ -297,7 +303,8 @@
     </nav>
 
     <!-- HTML del Modal Base (Se inyecta dinámicamente) -->
-    <div class="liquid-modal" id="global-modal">
+    <!-- ===== MODAL GLOBAL (Frente 2) ===== -->
+    <div class="liquid-modal" id="global-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-body" aria-hidden="true">
         <div class="liquid-modal-bg"></div>
         <video id="modal-video" class="liquid-modal-video" loop muted playsinline preload="none">
             <source src="media/3.webm" type="video/webm">
@@ -315,7 +322,7 @@
     </div>
 
     <!-- ===== MODAL DE CONTACTO (Frente 2) ===== -->
-    <div class="liquid-modal" id="contact-modal">
+    <div class="liquid-modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-name" aria-describedby="contact-modal-desc" aria-hidden="true">
         <div class="liquid-modal-bg" id="contact-modal-bg"></div>
         <video class="liquid-modal-video" loop muted playsinline preload="none" id="contact-modal-video">
             <source src="media/3.webm" type="video/webm">
@@ -335,8 +342,8 @@
         <img src="assets/img/perfil.webp" alt="Juan Carlos Izquierdo" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <div class="modal-identity">
-                    <h2 class="modal-name">Juan Carlos Izquierdo González</h2>
-                    <p class="modal-title">Arquitecto de Sistemas & IA</p>
+                    <h2 id="contact-modal-name" class="modal-name">Juan Carlos Izquierdo González</h2>
+                    <p id="contact-modal-desc" class="modal-title">Arquitecto de Sistemas & IA</p>
                     <p class="modal-company mono">Themis by Nexus</p>
                 </div>
             </div>
