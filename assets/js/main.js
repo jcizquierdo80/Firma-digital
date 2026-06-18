@@ -1,3 +1,22 @@
+/**
+ * Firma Digital v4.2 - Main Entry Point
+ * Módulo principal que integra todos los sistemas
+ */
+
+// Importar módulos ES6
+import { state } from './state.js';
+import { capabilities, initCapabilities } from './capabilities.js';
+import { shareContact, downloadVCard } from './share-manager.js';
+
+// Exportar para acceso global si es necesario
+window.shareContact = shareContact;
+window.downloadVCard = downloadVCard;
+
+// Inicializar capacidades al cargar
+initCapabilities().then(() => {
+    console.log('✅ Capabilities initialized');
+});
+
 // 🏁 Motor F1: Carga en memoria para AudioBuffer (zero latency)
 let F1_SAMPLE_BUFFER = null;
 
@@ -11,13 +30,19 @@ const SoundManager = {
         if (F1_SAMPLE_BUFFER) return;
         try {
             const response = await fetch('media/f1-engine.mp3');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const arrayBuffer = await response.arrayBuffer();
             const AC = window.AudioContext || window.webkitAudioContext;
-            if (!AC) return;
+            if (!AC) {
+                console.warn('⚠️ Web Audio API no disponible');
+                return;
+            }
             if (!this.ctx) this.ctx = new AC();
             F1_SAMPLE_BUFFER = await this.ctx.decodeAudioData(arrayBuffer);
+            console.log('✅ F1 audio buffer cargado');
         } catch (e) {
-            console.error("Error cargando F1 audio buffer:", e);
+            console.error('❌ Error cargando F1 audio buffer:', e.message);
+            // Fallback: permitir experiencia sin audio
         }
     },
 
@@ -360,15 +385,27 @@ async function unlockSensors(event) {
     await SoundManager.loadF1Sample();
     Haptic.unlock();
     SoundManager.engineStart();
-    try { Haptic.success(); } catch(e) {}
+    if (typeof Haptic !== 'undefined' && Haptic.success) {
+        try { Haptic.success(); } catch(e) { console.warn('Haptic success failed:', e); }
+    }
 
-    // Video hero: reproducir tras desbloqueo
+    // Video hero: reproducir tras desbloqueo con manejo correcto de autoplay
     var av = document.getElementById('avatar-video');
     if (av && av.style.display !== 'none') {
-        av.play().then(function() {
-            var fb = document.getElementById('avatar-fallback');
-            if (fb) fb.style.display = 'none';
-        }).catch(function() {});
+        var playPromise = av.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                var fb = document.getElementById('avatar-fallback');
+                if (fb) fb.style.display = 'none';
+                console.log('✅ Avatar video playing');
+            }).catch(function(error) {
+                if (error.name === 'NotAllowedError') {
+                    console.warn('⚠️ Autoplay bloqueado, usuario debe iniciar manualmente');
+                } else {
+                    console.error('❌ Error reproduciendo avatar video:', error);
+                }
+            });
+        }
     }
 }
 
@@ -419,10 +456,11 @@ const Env = {
     needsPermission: typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'
 };
 const appShell = document.getElementById('appShell');
-window._modalOpen = false;
+
+// Usar state module en lugar de variable global directa
 const fixIOSRubber = (el) => {
     el.addEventListener('touchstart', () => {
-        if (window._modalOpen) return;
+        if (state.isModalOpen) return;
         const top = el.scrollTop;
         const totalScroll = el.scrollHeight;
         const currentScroll = top + el.offsetHeight;
@@ -1050,7 +1088,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
                 modalVideo.play().catch(() => {});
             }
             modalContainer.classList.add('show');
-            window._modalOpen = true;
+            state.setModalOpen(true);
             appShell.classList.add('modal-open');
         }
     });
@@ -1058,7 +1096,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
 function closeGlobalModal() {
     feedback('close');
     modalContainer.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(() => {
         if (modalVideo) modalVideo.pause();
@@ -1079,7 +1117,7 @@ allModals.forEach(modal => {
             const cleanup = () => {
                 if (cleaned) return;
                 cleaned = true;
-                window._modalOpen = false;
+                state.setModalOpen(false);
                 appShell.classList.remove('modal-open');
             };
             modal.addEventListener('transitionend', cleanup, { once: true });
@@ -1355,14 +1393,14 @@ function openContactModal() {
     initContactModal();
     if (contactVideo && contactVideo.paused) contactVideo.play().catch(function() {});
     contactModal.classList.add('show');
-    window._modalOpen = true;
+    state.setModalOpen(true);
     appShell.classList.add('modal-open');
 }
 
 function closeContactModal() {
     feedback('close');
     contactModal.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(function() {
         if (contactVideo) contactVideo.pause();
@@ -1519,3 +1557,41 @@ const RaceState = {
 })();
 
 // ExperienceGuard eliminado: el chip "Activar Modo F1" unifica la activación
+
+// ================================================
+// SERVICE WORKER REGISTRATION (Offline First)
+// ================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('[SW] Registered:', registration.scope);
+            })
+            .catch((error) => {
+                console.warn('[SW] Registration failed:', error);
+            });
+    });
+}
+
+// ================================================
+// CAPABILITIES INITIALIZATION
+// ================================================
+// Nota: Para usar módulos ES6, necesitamos type="module" en el script tag
+// Esta inicialización se hará inline en el HTML o mediante script module separado
+(function initCapabilitiesInline() {
+    // Detección básica inline para compatibilidad
+    window.capabilities = {
+        vibration: 'vibrate' in navigator,
+        webShare: 'share' in navigator,
+        isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+        isAndroid: /Android/.test(navigator.userAgent),
+        prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    };
+    
+    // Aplicar clase para reduced motion
+    if (window.capabilities.prefersReducedMotion) {
+        document.body.classList.add('reduced-motion');
+    }
+    
+    console.log('🔧 Capabilities loaded:', window.capabilities);
+})();

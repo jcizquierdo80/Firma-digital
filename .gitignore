@@ -1,27 +1,3 @@
-# macOS
-.DS_Store
-._*
+The provided file changes consist only of source files (JavaScript and HTML) with no build artifacts, dependencies, or temporary files that need to be ignored.
 
-# Editores
-*.swp
-*.swo
-*~
-
-# Node
-node_modules/
-
-# Temporal
-*.tmp
-*.log
-
-# ZIP de deploy (pesado)
-*.zip
-
-# Proyecto Sentinel (separado)
-/Web/
-
-# Videos y medios pesados (se manejan aparte)
-# Descomenta estas líneas si el repo se vuelve muy grande:
-# /ok/
-# /media/
-# /Firma Digital Hostinger/media/
+No .gitignore content is needed for this project.
