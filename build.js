@@ -83,6 +83,21 @@ dirsToCopy.forEach(dir => {
     }
 });
 
+// 4.5. Ofuscar y minificar JavaScript (Seguridad)
+console.log('🔒 Ofuscando y minificando JavaScript (Seguridad Anti-Bot)...');
+const jsFiles = ['main.js', 'capabilities.js', 'state.js', 'share-manager.js'];
+jsFiles.forEach(jsFile => {
+    const filePath = path.join(OUTPUT_DIR, 'assets', 'js', jsFile);
+    if (fs.existsSync(filePath)) {
+        try {
+            execSync(`npx -y terser "${filePath}" -c -m -o "${filePath}"`, { stdio: 'ignore' });
+            console.log(`   ✅ ${jsFile} ofuscado.`);
+        } catch (err) {
+            console.error(`   ❌ Error al ofuscar ${jsFile}. Usando versión original.`);
+        }
+    }
+});
+
 // 5. Verificaciones de integridad (Opcional, pero recomendado)
 console.log('🔍 Verificando integridad de código...');
 const indexHtmlContent = fs.readFileSync(path.join(OUTPUT_DIR, 'index.html'), 'utf8');

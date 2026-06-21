@@ -12,4 +12,4 @@ Disallow: /
 User-agent: Google-Extended
 Disallow: /
 
-Sitemap: https://jcarlos.themisbynexus.com/sitemap.xml
+Sitemap: https://cesar.omnilogic.com.mx/sitemap.xml

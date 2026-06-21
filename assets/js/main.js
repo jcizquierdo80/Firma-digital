@@ -1,3 +1,22 @@
+/**
+ * Firma Digital v4.2 - Main Entry Point
+ * Módulo principal que integra todos los sistemas
+ */
+
+// Importar módulos ES6
+import { state } from './state.js';
+import { capabilities, initCapabilities } from './capabilities.js';
+import { shareContact, downloadVCard } from './share-manager.js';
+
+// Exportar para acceso global si es necesario
+window.shareContact = shareContact;
+window.downloadVCard = downloadVCard;
+
+// Inicializar capacidades al cargar
+initCapabilities().then(() => {
+    console.log('✅ Capabilities initialized');
+});
+
 // 🏁 Motor F1: Carga en memoria para AudioBuffer (zero latency)
 let F1_SAMPLE_BUFFER = null;
 
@@ -11,13 +30,19 @@ const SoundManager = {
         if (F1_SAMPLE_BUFFER) return;
         try {
             const response = await fetch('media/f1-engine.mp3');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const arrayBuffer = await response.arrayBuffer();
             const AC = window.AudioContext || window.webkitAudioContext;
-            if (!AC) return;
+            if (!AC) {
+                console.warn('⚠️ Web Audio API no disponible');
+                return;
+            }
             if (!this.ctx) this.ctx = new AC();
             F1_SAMPLE_BUFFER = await this.ctx.decodeAudioData(arrayBuffer);
+            console.log('✅ F1 audio buffer cargado');
         } catch (e) {
-            console.error("Error cargando F1 audio buffer:", e);
+            console.error('❌ Error cargando F1 audio buffer:', e.message);
+            // Fallback: permitir experiencia sin audio
         }
     },
 
@@ -360,15 +385,27 @@ async function unlockSensors(event) {
     await SoundManager.loadF1Sample();
     Haptic.unlock();
     SoundManager.engineStart();
-    try { Haptic.success(); } catch(e) {}
+    if (typeof Haptic !== 'undefined' && Haptic.success) {
+        try { Haptic.success(); } catch(e) { console.warn('Haptic success failed:', e); }
+    }
 
-    // Video hero: reproducir tras desbloqueo
+    // Video hero: reproducir tras desbloqueo con manejo correcto de autoplay
     var av = document.getElementById('avatar-video');
     if (av && av.style.display !== 'none') {
-        av.play().then(function() {
-            var fb = document.getElementById('avatar-fallback');
-            if (fb) fb.style.display = 'none';
-        }).catch(function() {});
+        var playPromise = av.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                var fb = document.getElementById('avatar-fallback');
+                if (fb) fb.style.display = 'none';
+                console.log('✅ Avatar video playing');
+            }).catch(function(error) {
+                if (error.name === 'NotAllowedError') {
+                    console.warn('⚠️ Autoplay bloqueado, usuario debe iniciar manualmente');
+                } else {
+                    console.error('❌ Error reproduciendo avatar video:', error);
+                }
+            });
+        }
     }
 }
 
@@ -419,10 +456,11 @@ const Env = {
     needsPermission: typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'
 };
 const appShell = document.getElementById('appShell');
-window._modalOpen = false;
+
+// Usar state module en lugar de variable global directa
 const fixIOSRubber = (el) => {
     el.addEventListener('touchstart', () => {
-        if (window._modalOpen) return;
+        if (state.isModalOpen) return;
         const top = el.scrollTop;
         const totalScroll = el.scrollHeight;
         const currentScroll = top + el.offsetHeight;
@@ -1050,7 +1088,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
                 modalVideo.play().catch(() => {});
             }
             modalContainer.classList.add('show');
-            window._modalOpen = true;
+            state.setModalOpen(true);
             appShell.classList.add('modal-open');
         }
     });
@@ -1058,7 +1096,7 @@ document.querySelectorAll('[data-modal]').forEach(card => {
 function closeGlobalModal() {
     feedback('close');
     modalContainer.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(() => {
         if (modalVideo) modalVideo.pause();
@@ -1079,7 +1117,7 @@ allModals.forEach(modal => {
             const cleanup = () => {
                 if (cleaned) return;
                 cleaned = true;
-                window._modalOpen = false;
+                state.setModalOpen(false);
                 appShell.classList.remove('modal-open');
             };
             modal.addEventListener('transitionend', cleanup, { once: true });
@@ -1164,21 +1202,21 @@ document.addEventListener('keydown', (e) => {
 // ================================================
 // Datos ofuscados para evitar scraping de bots
 const CONTACT_DATA = {
-    name: 'Juan Carlos Izquierdo González',
-    org: 'Themis by Nexus',
-    title: 'Arquitecto de Sistemas & IA',
-    email: ['jc', '@', 'themisbynexus', '.', 'com'].join(''),
-    url: 'https://jcarlos.themisbynexus.com',
-    phone: ['+', '52', '1', '729', '155', '6630'].join(''),
-    whatsapp: ['52', '1', '729', '155', '6630'].join('')
+    name: 'Cesar Segura',
+    org: 'OmniLogic',
+    title: 'Project Manager · Vibe Coding AI',
+    email: ['cesar', '@', 'omnilogic', '.', 'com', '.', 'mx'].join(''),
+    url: 'https://cesar.omnilogic.com.mx',
+    phone: ['+', '52', ' ', '729', ' ', '108', ' ', '9897'].join(''),
+    whatsapp: ['52', '729', '108', '9897'].join('')
 };
 
 function buildVCard(d) {
     return 'BEGIN:VCARD\nVERSION:3.0\nFN:' + d.name +
-        '\nN:Izquierdo González;Juan Carlos;;;\nORG:' + d.org +
+        '\nN:Segura;Cesar;;;\nORG:' + d.org +
         '\nTITLE:' + d.title + '\nTEL;TYPE=CELL:' + d.phone +
         '\nEMAIL;TYPE=INTERNET:' + d.email + '\nURL:' + d.url +
-        '\nNOTE:Arquitecto de IA · Co-Founder Themis by Nexus\nEND:VCARD';
+        '\nNOTE:Project Manager · Vibe Coding AI en OmniLogic\nEND:VCARD';
 }
 
 async function saveContact() {
@@ -1186,7 +1224,7 @@ async function saveContact() {
     const blob = new Blob([buildVCard(CONTACT_DATA)], {
         type: 'text/vcard;charset=utf-8'
     });
-    const file = new File([blob], 'juan-carlos-themis-nexus.vcf', {
+    const file = new File([blob], 'cesar-segura-omnilogic.vcf', {
         type: 'text/vcard'
     });
     if (navigator.canShare && navigator.canShare({
@@ -1194,7 +1232,7 @@ async function saveContact() {
         })) {
         try {
             await navigator.share({
-                title: 'Juan Carlos Izquierdo — Themis by Nexus',
+                title: 'Cesar Segura — OmniLogic',
                 text: '¡Guarda mi contacto!',
                 files: [file]
             });
@@ -1207,7 +1245,7 @@ async function saveContact() {
     if (navigator.share) {
         try {
             await navigator.share({
-                title: 'Juan Carlos Izquierdo',
+                title: 'Cesar Segura',
                 url: CONTACT_DATA.url
             });
             return;
@@ -1218,7 +1256,7 @@ async function saveContact() {
     const url = URL.createObjectURL(blob);
     const a = Object.assign(document.createElement('a'), {
         href: url,
-        download: 'juan-carlos-themis-nexus.vcf'
+        download: 'cesar-segura-omnilogic.vcf'
     });
     document.body.appendChild(a);
     a.click();
@@ -1261,7 +1299,7 @@ function renderWalletButtons() {
 
 function openCalendly() {
     feedback('click');
-    var URL_CALENDLY = 'https://calendly.com/jc-themisbynexus/30min';
+    var URL_CALENDLY = 'https://calendly.com/omnilogic/30min';
     if (window.Calendly) {
         Calendly.initPopupWidget({
             url: URL_CALENDLY
@@ -1294,11 +1332,11 @@ var NFCModule = {
             await new NDEFReader().write({
                 records: [{
                         recordType: 'url',
-                        data: 'https://jcarlos.themisbynexus.com'
+                        data: 'https://cesar.omnilogic.com.mx'
                     },
                     {
                         recordType: 'text',
-                        data: 'Juan Carlos Izquierdo — Themis by Nexus'
+                        data: 'Cesar Segura — OmniLogic'
                     }
                 ]
             });
@@ -1328,7 +1366,7 @@ var NFCModule = {
 function generateModalQR() {
     var canvas = document.getElementById('qr-canvas');
     if (!canvas || typeof QRCode === 'undefined') return;
-    QRCode.toCanvas(canvas, 'https://jcarlos.themisbynexus.com', {
+    QRCode.toCanvas(canvas, 'https://cesar.omnilogic.com.mx', {
         width: 160,
         margin: 2,
         color: {
@@ -1355,14 +1393,14 @@ function openContactModal() {
     initContactModal();
     if (contactVideo && contactVideo.paused) contactVideo.play().catch(function() {});
     contactModal.classList.add('show');
-    window._modalOpen = true;
+    state.setModalOpen(true);
     appShell.classList.add('modal-open');
 }
 
 function closeContactModal() {
     feedback('close');
     contactModal.classList.remove('show');
-    window._modalOpen = false;
+    state.setModalOpen(false);
     appShell.classList.remove('modal-open');
     setTimeout(function() {
         if (contactVideo) contactVideo.pause();
@@ -1519,3 +1557,41 @@ const RaceState = {
 })();
 
 // ExperienceGuard eliminado: el chip "Activar Modo F1" unifica la activación
+
+// ================================================
+// SERVICE WORKER REGISTRATION (Offline First)
+// ================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('[SW] Registered:', registration.scope);
+            })
+            .catch((error) => {
+                console.warn('[SW] Registration failed:', error);
+            });
+    });
+}
+
+// ================================================
+// CAPABILITIES INITIALIZATION
+// ================================================
+// Nota: Para usar módulos ES6, necesitamos type="module" en el script tag
+// Esta inicialización se hará inline en el HTML o mediante script module separado
+(function initCapabilitiesInline() {
+    // Detección básica inline para compatibilidad
+    window.capabilities = {
+        vibration: 'vibrate' in navigator,
+        webShare: 'share' in navigator,
+        isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+        isAndroid: /Android/.test(navigator.userAgent),
+        prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    };
+    
+    // Aplicar clase para reduced motion
+    if (window.capabilities.prefersReducedMotion) {
+        document.body.classList.add('reduced-motion');
+    }
+    
+    console.log('🔧 Capabilities loaded:', window.capabilities);
+})();

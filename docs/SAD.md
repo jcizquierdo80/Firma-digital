@@ -2,7 +2,7 @@
 ## Firma Digital Sentinel — F1 Cinematic v4.1
 
 **Versión:** 4.1.0-MASTER | **Build:** 4009 | **Fecha:** 27 Mayo 2026  
-**Autor:** Equipo Orion / Juan Carlos Izquierdo González  
+**Autor:** Equipo Orion / Cesar Segura  
 **Sincronizado con:** [README.md](./README.md) • [SAD-Lite.md](./SAD-Lite.md) • [Developer-Handbook.md](./Developer-Handbook.md) • [BACKLOG-HU.md](./BACKLOG-HU.md)
 
 ---
@@ -212,7 +212,7 @@ graph TD
 Fuente canónica: `.htaccess` (no meta tags en HTML).
 
 ```
-Header set Content-Security-Policy "default-src 'self'; script-src 'self' cdn.jsdelivr.net assets.calendly.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://api.themisbynexus.com; frame-src 'self' calendly.com; object-src 'none'; base-uri 'self'"
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' cdn.jsdelivr.net assets.calendly.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://api.omnilogic.com.mx; frame-src 'self' calendly.com; object-src 'none'; base-uri 'self'"
 ```
 
 ### 6.2 Anti-Bot (3 Capas)

@@ -1,0 +1,21 @@
+{
+  "name": "Cesar Segura | Firma Digital",
+  "short_name": "Cesar Segura",
+  "description": "Project Manager · Vibe Coding AI | OmniLogic",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "media/perfil.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es-MX",
+  "dir": "ltr"
+}

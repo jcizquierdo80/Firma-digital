@@ -6,7 +6,7 @@
 
 ## 0. Control Documental
 
-**Versión:** 4.1.0-MASTER | **Fecha:** 27 Mayo 2026 | **Autor:** Equipo Orion / Juan Carlos Izquierdo González  
+**Versión:** 4.1.0-MASTER | **Fecha:** 27 Mayo 2026 | **Autor:** Equipo Orion / Cesar Segura  
 **Sincronizado con:** [SAD.md](./SAD.md) • [SAD-Lite.md](./SAD-Lite.md) • [Developer-Handbook.md](./Developer-Handbook.md)
 
 ---
